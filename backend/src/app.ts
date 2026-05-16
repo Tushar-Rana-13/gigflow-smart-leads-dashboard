@@ -3,7 +3,9 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.routes";
 import leadRoutes from "./routes/lead.routes";
+
 import errorMiddleware from "./middleware/error.middleware";
+import notFoundMiddleware from "./middleware/notFound.middleware";
 
 const app = express();
 
@@ -19,6 +21,10 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/leads", leadRoutes);
 
+// Not Found Middleware
+app.use(notFoundMiddleware);
+
+// Error Middleware
 app.use(errorMiddleware);
 
 export default app;
