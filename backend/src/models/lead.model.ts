@@ -1,68 +1,88 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, {
+  Document,
+  Schema,
+} from "mongoose";
 
-export interface ILead extends Document {
+export interface ILead
+  extends Document {
   name: string;
+
   email: string;
 
   status:
     | "new"
     | "contacted"
     | "qualified"
+    | "converted"
     | "lost";
 
   source:
     | "website"
+    | "facebook"
+    | "linkedin"
     | "instagram"
     | "referral";
 
   createdBy: mongoose.Types.ObjectId;
 }
 
-const leadSchema = new Schema<ILead>(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
+const leadSchema =
+  new Schema<ILead>(
+    {
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      email: {
+        type: String,
+        required: true,
+        lowercase: true,
+      },
+
+      status: {
+        type: String,
+
+        enum: [
+          "new",
+          "contacted",
+          "qualified",
+          "converted",
+          "lost",
+        ],
+
+        default: "new",
+      },
+
+      source: {
+        type: String,
+
+        enum: [
+          "website",
+          "facebook",
+          "linkedin",
+          "instagram",
+          "referral",
+        ],
+
+        required: true,
+      },
+
+      createdBy: {
+        type:
+          Schema.Types.ObjectId,
+
+        ref: "User",
+
+        required: true,
+      },
     },
 
-    email: {
-      type: String,
-      required: true,
-      lowercase: true,
-    },
-
-    status: {
-      type: String,
-      enum: [
-        "new",
-        "contacted",
-        "qualified",
-        "lost",
-      ],
-      default: "new",
-    },
-
-    source: {
-      type: String,
-      enum: [
-        "website",
-        "instagram",
-        "referral",
-      ],
-      required: true,
-    },
-
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
+    {
+      timestamps: true,
+    }
+  );
 
 const Lead = mongoose.model<ILead>(
   "Lead",

@@ -6,16 +6,12 @@ import {
 import toast from "react-hot-toast";
 
 import {
-  useNavigate,
-} from "react-router-dom";
-
-import { useAuthStore } from "../store/authStore";
-
-import {
   getLeads,
   deleteLead,
   exportCSV,
 } from "../services/leadService";
+
+import { useAuthStore } from "../store/authStore";
 
 import type { Lead } from "../types/lead";
 
@@ -23,10 +19,22 @@ import LeadsTable from "../components/LeadsTable";
 
 import CreateLeadForm from "../components/CreateLeadForm";
 
-const DashboardPage = () => {
-  const navigate = useNavigate();
+import EditLeadModal from "../components/EditLeadModel";
 
-  const { user, logout, token } =
+import Loader from "../components/Loader";
+
+import EmptyState from "../components/EmptyState";
+
+import Navbar from "../components/Navbar";
+
+import useDebounce from "../hooks/useDebounce";
+
+import StatsCard from "../components/StatsCard";
+
+import LeadChart from "../components/LeadChart";
+
+const DashboardPage = () => {
+  const { token } =
     useAuthStore();
 
   const [leads, setLeads] = useState<
@@ -45,6 +53,13 @@ const DashboardPage = () => {
   const [page, setPage] =
     useState(1);
 
+  const [selectedLead,
+    setSelectedLead] =
+    useState<Lead | null>(null);
+
+  const debouncedSearch =
+    useDebounce(search, 500);
+
   const fetchLeads = async () => {
     try {
       setLoading(true);
@@ -53,7 +68,7 @@ const DashboardPage = () => {
         await getLeads(
           token as string,
           page,
-          search,
+          debouncedSearch,
           status
         );
 
@@ -62,7 +77,7 @@ const DashboardPage = () => {
       toast.error(
         error.response?.data
           ?.message ||
-          "Failed to fetch leads"
+        "Failed to fetch leads"
       );
     } finally {
       setLoading(false);
@@ -71,7 +86,11 @@ const DashboardPage = () => {
 
   useEffect(() => {
     fetchLeads();
-  }, [page, search, status]);
+  }, [
+    page,
+    debouncedSearch,
+    status,
+  ]);
 
   const handleDelete = async (
     id: string
@@ -87,11 +106,9 @@ const DashboardPage = () => {
       );
 
       fetchLeads();
-    } catch (error: any) {
+    } catch {
       toast.error(
-        error.response?.data
-          ?.message ||
-          "Delete failed"
+        "Delete failed"
       );
     }
   };
@@ -131,39 +148,68 @@ const DashboardPage = () => {
       }
     };
 
-  const handleLogout = () => {
-    logout();
+  const totalLeads =
+    leads.length;
 
-    navigate("/");
-  };
+  const newLeads = leads.filter(
+    (lead) =>
+      lead.status === "new"
+  ).length;
+
+  const contactedLeads =
+    leads.filter(
+      (lead) =>
+        lead.status ===
+        "contacted"
+    ).length;
+
+  const convertedLeads =
+    leads.filter(
+      (lead) =>
+        lead.status ===
+        "converted"
+    ).length;
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md p-5 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">
-            GigFlow Dashboard
-          </h1>
+      <Navbar />
 
-          <p className="text-gray-600">
-            Welcome, {user?.name}
-          </p>
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-5 py-2 rounded-lg"
-        >
-          Logout
-        </button>
-      </div>
-
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <CreateLeadForm
           refreshLeads={fetchLeads}
         />
 
-        <div className="bg-white p-5 rounded-xl shadow-md mb-6 flex gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          <StatsCard
+            title="Total Leads"
+            value={totalLeads}
+            color="bg-black"
+          />
+
+          <StatsCard
+            title="New Leads"
+            value={newLeads}
+            color="bg-blue-600"
+          />
+
+          <StatsCard
+            title="Contacted"
+            value={contactedLeads}
+            color="bg-yellow-500"
+          />
+
+          <StatsCard
+            title="Converted"
+            value={convertedLeads}
+            color="bg-green-600"
+          />
+        </div>
+
+        <div className="mb-6">
+          <LeadChart leads={leads} />
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl shadow-md mb-6 flex flex-col md:flex-row gap-4">
           <input
             type="text"
             placeholder="Search leads..."
@@ -197,33 +243,42 @@ const DashboardPage = () => {
               Contacted
             </option>
 
+            <option value="qualified">
+              Qualified
+            </option>
+
             <option value="converted">
               Converted
+            </option>
+
+            <option value="lost">
+              Lost
             </option>
           </select>
 
           <button
             onClick={handleExport}
-            className="bg-black text-white px-5 rounded-lg"
+            className="bg-black hover:bg-gray-800 text-white px-5 py-3 rounded-lg"
           >
             Export CSV
           </button>
         </div>
 
-        <div className="bg-white p-5 rounded-xl shadow-md">
+        <div className="bg-white p-5 rounded-2xl shadow-md">
           {loading ? (
-            <p>Loading leads...</p>
+            <Loader />
+          ) : leads.length === 0 ? (
+            <EmptyState />
           ) : (
             <LeadsTable
               leads={leads}
-              onDelete={
-                handleDelete
-              }
+              onDelete={handleDelete}
+              onEdit={setSelectedLead}
             />
           )}
         </div>
 
-        <div className="flex gap-4 mt-5">
+        <div className="flex justify-center gap-4 mt-6">
           <button
             onClick={() =>
               setPage((prev) =>
@@ -233,7 +288,7 @@ const DashboardPage = () => {
                 )
               )
             }
-            className="bg-gray-300 px-4 py-2 rounded-lg"
+            className="bg-gray-300 hover:bg-gray-400 px-5 py-2 rounded-lg"
           >
             Prev
           </button>
@@ -244,12 +299,22 @@ const DashboardPage = () => {
                 (prev) => prev + 1
               )
             }
-            className="bg-gray-300 px-4 py-2 rounded-lg"
+            className="bg-gray-300 hover:bg-gray-400 px-5 py-2 rounded-lg"
           >
             Next
           </button>
         </div>
       </div>
+
+      {selectedLead && (
+        <EditLeadModal
+          lead={selectedLead}
+          onClose={() =>
+            setSelectedLead(null)
+          }
+          refreshLeads={fetchLeads}
+        />
+      )}
     </div>
   );
 };

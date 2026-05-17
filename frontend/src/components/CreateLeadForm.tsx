@@ -4,11 +4,15 @@ import {
 
 import toast from "react-hot-toast";
 
-import api from "../services/api";
-
 import { useAuthStore } from "../store/authStore";
 
-interface FormData {
+import api from "../services/api";
+
+interface Props {
+  refreshLeads: () => void;
+}
+
+interface LeadFormData {
   name: string;
 
   email: string;
@@ -16,10 +20,6 @@ interface FormData {
   status: string;
 
   source: string;
-}
-
-interface Props {
-  refreshLeads: () => void;
 }
 
 const CreateLeadForm = ({
@@ -32,10 +32,10 @@ const CreateLeadForm = ({
     register,
     handleSubmit,
     reset,
-  } = useForm<FormData>();
+  } = useForm<LeadFormData>();
 
   const onSubmit = async (
-    data: FormData
+    data: LeadFormData
   ) => {
     try {
       await api.post(
@@ -49,7 +49,7 @@ const CreateLeadForm = ({
       );
 
       toast.success(
-        "Lead created"
+        "Lead created successfully"
       );
 
       reset();
@@ -65,39 +65,38 @@ const CreateLeadForm = ({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(
-        onSubmit
-      )}
-      className="bg-white p-5 rounded-xl shadow-md mb-6"
-    >
-      <h2 className="text-xl font-bold mb-4">
-        Create Lead
+    <div className="bg-white p-6 rounded-2xl shadow-md mb-6">
+      <h2 className="text-2xl font-bold mb-5">
+        Create New Lead
       </h2>
 
-      <div className="grid grid-cols-2 gap-4">
+      <form
+        onSubmit={handleSubmit(
+          onSubmit
+        )}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
         <input
           type="text"
-          placeholder="Name"
+          placeholder="Lead Name"
           {...register("name")}
           className="p-3 border rounded-lg"
+          required
         />
 
         <input
           type="email"
-          placeholder="Email"
+          placeholder="Lead Email"
           {...register("email")}
           className="p-3 border rounded-lg"
+          required
         />
 
         <select
           {...register("status")}
+          defaultValue="new"
           className="p-3 border rounded-lg"
         >
-          <option value="">
-            Select Status
-          </option>
-
           <option value="new">
             New
           </option>
@@ -106,19 +105,24 @@ const CreateLeadForm = ({
             Contacted
           </option>
 
+          <option value="qualified">
+            Qualified
+          </option>
+
           <option value="converted">
             Converted
+          </option>
+
+          <option value="lost">
+            Lost
           </option>
         </select>
 
         <select
           {...register("source")}
+          defaultValue="website"
           className="p-3 border rounded-lg"
         >
-          <option value="">
-            Select Source
-          </option>
-
           <option value="website">
             Website
           </option>
@@ -130,16 +134,24 @@ const CreateLeadForm = ({
           <option value="linkedin">
             LinkedIn
           </option>
-        </select>
-      </div>
 
-      <button
-        type="submit"
-        className="mt-4 bg-black text-white px-5 py-2 rounded-lg"
-      >
-        Create Lead
-      </button>
-    </form>
+          <option value="instagram">
+            Instagram
+          </option>
+
+          <option value="referral">
+            Referral
+          </option>
+        </select>
+
+        <button
+          type="submit"
+          className="bg-black hover:bg-gray-800 text-white py-3 rounded-lg col-span-1 md:col-span-2 lg:col-span-4"
+        >
+          Create Lead
+        </button>
+      </form>
+    </div>
   );
 };
 

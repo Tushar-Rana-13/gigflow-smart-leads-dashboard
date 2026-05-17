@@ -12,52 +12,47 @@ import toast from "react-hot-toast";
 import {
   Mail,
   Lock,
+  User,
 } from "lucide-react";
 
 import api from "../services/api";
 
-import { useAuthStore } from "../store/authStore";
+interface RegisterFormData {
+  name: string;
 
-interface LoginFormData {
   email: string;
 
   password: string;
 }
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const navigate = useNavigate();
-
-  const { setAuth } =
-    useAuthStore();
 
   const {
     register,
     handleSubmit,
-  } = useForm<LoginFormData>();
+  } = useForm<RegisterFormData>();
 
   const onSubmit = async (
-    data: LoginFormData
+    data: RegisterFormData
   ) => {
     try {
-      const response =
-        await api.post(
-          "/auth/login",
-          data
-        );
-
-      setAuth(
-        response.data.token,
-        response.data.user
+      await api.post(
+        "/auth/register",
+        {
+          ...data,
+          role: "admin",
+        }
       );
 
       toast.success(
-        "Welcome back!"
+        "Registration successful"
       );
 
-      navigate("/dashboard");
+      navigate("/");
     } catch {
       toast.error(
-        "Invalid credentials"
+        "Registration failed"
       );
     }
   };
@@ -72,15 +67,26 @@ const LoginPage = () => {
       >
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white">
-            GigFlow
+            Create Account
           </h1>
 
           <p className="text-gray-300 mt-2">
-            Smart Leads Dashboard
+            Join GigFlow
           </p>
         </div>
 
         <div className="space-y-5">
+          <div className="relative">
+            <User className="absolute left-3 top-3 text-gray-400" />
+
+            <input
+              type="text"
+              placeholder="Name"
+              {...register("name")}
+              className="w-full pl-12 p-3 rounded-xl bg-white/10 text-white border border-white/20 outline-none"
+            />
+          </div>
+
           <div className="relative">
             <Mail className="absolute left-3 top-3 text-gray-400" />
 
@@ -110,17 +116,17 @@ const LoginPage = () => {
           type="submit"
           className="w-full mt-6 bg-white text-black font-semibold py-3 rounded-xl hover:scale-[1.02] transition"
         >
-          Login
+          Register
         </button>
 
         <p className="text-center text-gray-300 mt-6">
-          Don’t have account?{" "}
+          Already have account?{" "}
 
           <Link
-            to="/register"
+            to="/"
             className="text-white font-semibold"
           >
-            Register
+            Login
           </Link>
         </p>
       </form>
@@ -128,4 +134,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

@@ -1,0 +1,27 @@
+# dependencies
+node_modules
+
+# env files
+.env
+.env.local
+
+# build files
+dist
+build
+
+# logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# vite
+.vite
+
+# TypeScript
+*.tsbuildinfo
