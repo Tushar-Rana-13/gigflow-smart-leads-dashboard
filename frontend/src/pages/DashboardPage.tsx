@@ -61,9 +61,7 @@ const DashboardPage = () => {
 
       setLeads(data.leads);
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "Failed to fetch leads"
-      );
+      toast.error(error?.response?.data?.message || "Failed to fetch leads");
     } finally {
       setLoading(false);
     }
@@ -79,7 +77,7 @@ const DashboardPage = () => {
       toast.success("Lead deleted");
       fetchLeads();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Delete failed");
+      toast.error(error?.response?.data?.message || "Delete failed");
     }
   };
 
@@ -95,6 +93,7 @@ const DashboardPage = () => {
 
       document.body.appendChild(link);
       link.click();
+      link.remove();
     } catch {
       toast.error("Export failed");
     }
@@ -124,15 +123,15 @@ const DashboardPage = () => {
 
       {/* Header */}
       <div className="bg-white shadow-md border-b">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
 
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+            <h1 className="text-3xl font-bold flex items-center gap-2">
               <BarChart3 className="text-blue-600" />
               GigFlow Dashboard
             </h1>
 
-            <p className="text-gray-500 mt-1">
+            <p className="text-gray-500">
               Welcome back,{" "}
               <span className="font-semibold">{user?.name}</span>
             </p>
@@ -140,49 +139,51 @@ const DashboardPage = () => {
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl transition"
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl"
           >
             <LogOut size={18} />
             Logout
           </button>
+
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
 
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
-            <Users size={40} />
+          <div className="bg-blue-500 text-white p-5 rounded-2xl">
+            <Users />
+            <h2 className="text-2xl font-bold">{stats.new}</h2>
             <p>New Leads</p>
-            <h2 className="text-4xl font-bold">{stats.new}</h2>
           </div>
 
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
-            <Phone size={40} />
+          <div className="bg-green-500 text-white p-5 rounded-2xl">
+            <Phone />
+            <h2 className="text-2xl font-bold">{stats.contacted}</h2>
             <p>Contacted</p>
-            <h2 className="text-4xl font-bold">{stats.contacted}</h2>
           </div>
 
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl shadow-lg">
-            <UserCheck size={40} />
+          <div className="bg-yellow-500 text-white p-5 rounded-2xl">
+            <UserCheck />
+            <h2 className="text-2xl font-bold">{stats.qualified}</h2>
             <p>Qualified</p>
-            <h2 className="text-4xl font-bold">{stats.qualified}</h2>
           </div>
 
-          <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-6 rounded-2xl shadow-lg">
-            <UserX size={40} />
-            <p>Lost Leads</p>
-            <h2 className="text-4xl font-bold">{stats.lost}</h2>
+          <div className="bg-red-500 text-white p-5 rounded-2xl">
+            <UserX />
+            <h2 className="text-2xl font-bold">{stats.lost}</h2>
+            <p>Lost</p>
           </div>
+
         </div>
 
         {/* Chart */}
-        <div className="bg-white rounded-3xl shadow-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-6">Lead Analytics</h2>
+        <div className="bg-white p-6 rounded-2xl shadow mb-8">
+          <h2 className="text-xl font-bold mb-4">Lead Analytics</h2>
 
-          <div className="h-[350px]">
+          <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={chartData} dataKey="value" outerRadius={120} label>
@@ -202,71 +203,49 @@ const DashboardPage = () => {
         {/* Create Lead */}
         <CreateLeadForm refreshLeads={fetchLeads} />
 
-        {/* Filters with BEAUTIFUL TABS */}
-        <div className="bg-white rounded-3xl shadow-lg p-5 mb-8 flex flex-col md:flex-row gap-4 items-center">
+        {/* Filters */}
+        <div className="bg-white p-5 rounded-2xl shadow flex flex-col md:flex-row gap-3 items-center mb-8">
 
-          {/* Search */}
           <input
-            type="text"
+            className="flex-1 p-3 border rounded-xl"
             placeholder="Search leads..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
-          {/* Status Tabs */}
           <div className="flex flex-wrap gap-2">
             {statusTabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setStatus(tab.key)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
-                  ${
-                    status === tab.key
-                      ? "bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md scale-105"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }
-                `}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                  status === tab.key
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
               >
                 {tab.label}
               </button>
             ))}
           </div>
 
-          {/* Export */}
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-5 py-3 rounded-xl transition"
+            className="bg-black text-white px-4 py-3 rounded-xl flex items-center gap-2"
           >
             <Download size={18} />
-            Export CSV
+            Export
           </button>
+
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-3xl shadow-lg p-5 overflow-x-auto">
+        <div className="bg-white p-5 rounded-2xl shadow">
           {loading ? (
-            <p>Loading leads...</p>
+            <p>Loading...</p>
           ) : (
             <LeadsTable leads={leads} onDelete={handleDelete} />
           )}
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-center gap-4 mt-8">
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className="bg-white shadow px-5 py-2 rounded-xl hover:bg-gray-100"
-          >
-            Prev
-          </button>
-
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            className="bg-white shadow px-5 py-2 rounded-xl hover:bg-gray-100"
-          >
-            Next
-          </button>
         </div>
 
       </div>
