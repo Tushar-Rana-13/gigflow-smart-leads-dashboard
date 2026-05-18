@@ -129,6 +129,4 @@ Routes are protected with JWT for authenticated actions.
 ## 👨‍💻 Author
 
 **Tushar Rana**  
-Full‑Stack Developer | ServiceHive Internship
-
 ---
