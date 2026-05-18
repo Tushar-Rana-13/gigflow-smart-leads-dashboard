@@ -46,7 +46,6 @@ const DashboardPage = () => {
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [page, setPage] = useState(1);
 
   const fetchLeads = async () => {
     try {
@@ -54,7 +53,7 @@ const DashboardPage = () => {
 
       const data = await getLeads(
         token as string,
-        page,
+        1, // fixed page = 1 (since pagination is not implemented in UI)
         search,
         status
       );
@@ -69,7 +68,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     fetchLeads();
-  }, [page, search, status]);
+  }, [search, status]); // removed page dependency
 
   const handleDelete = async (id: string) => {
     try {
